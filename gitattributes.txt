@@ -1,0 +1,2 @@
+*/ filter=lfs diff=lfs merge=lfs -text
+Assets/Sci-Fi UI/_SciFi_GUISkin_/atlas.png filter=lfs diff=lfs merge=lfs -text
