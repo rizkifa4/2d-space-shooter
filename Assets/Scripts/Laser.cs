@@ -5,14 +5,23 @@ using UnityEngine;
 public class Laser : MonoBehaviour
 {
     private float _speed = 13f;
+    private enum LaserType
+    {
+        PlayerLaser,
+        EnemyLaser
+    }
+
+    [SerializeField] private LaserType _laserType;
 
     void Update()
     {
-        transform.Translate(Vector3.up * _speed * Time.deltaTime);
+        Vector3 direction = IsPlayerLaser() ? Vector3.up : Vector3.down;
+
+        transform.Translate(direction * _speed * Time.deltaTime);
 
         float topDown = 8f;
 
-        if (transform.position.y > topDown)
+        if (transform.position.y > topDown || transform.position.y < -topDown)
         {
             if (transform.parent != null)
             {
@@ -20,5 +29,23 @@ public class Laser : MonoBehaviour
             }
             Destroy(this.gameObject);
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!IsPlayerLaser() && other.tag == "Player")
+        {
+            Player player = other.GetComponent<Player>();
+
+            if (player != null)
+            {
+                player.Damage(1);
+            }
+        }
+    }
+
+    private bool IsPlayerLaser()
+    {
+        return _laserType == LaserType.PlayerLaser;
     }
 }

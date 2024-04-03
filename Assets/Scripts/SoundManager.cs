@@ -8,7 +8,8 @@ public class SoundManager : MonoBehaviour
 
     public AudioClip playerLaserSound;
     public AudioClip explosionSound;
-    public AudioClip powerupSound;
+    public AudioClip positivePowerUpSound;
+    public AudioClip negativePowerUpSound;
 
     void Start()
     {

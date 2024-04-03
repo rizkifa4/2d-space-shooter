@@ -7,10 +7,14 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float _speed = 4f;
     [SerializeField] private int _damageAmount;
     [SerializeField] private int _scoreValue;
+    [SerializeField] private Transform _laserSpawnPoint;
+    [SerializeField] private GameObject _laserPrefab;
     private Player _player;
     private Animator _enemyAnim;
     private bool _isDead;
     private SoundManager _soundManager;
+    private float _fireRate = 3.0f;
+    private float _canFire = -1;
 
     void Start()
     {
@@ -24,6 +28,8 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         Movement();
+
+        EnemyFire();
     }
 
     private void Movement()
@@ -64,7 +70,7 @@ public class Enemy : MonoBehaviour
             _enemyAnim.SetTrigger("Destroy");
         }
 
-        if (other.tag == "Laser" && !_isDead)
+        if (other.tag == "PlayerLaser" && !_isDead)
         {
             if (_player != null)
             {
@@ -87,5 +93,18 @@ public class Enemy : MonoBehaviour
         Destroy(this.gameObject, destroyDelay);
 
         _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+    }
+
+    private void EnemyFire()
+    {
+        if (Time.time > _canFire && !_isDead)
+        {
+            _fireRate = Random.Range(3f, 7f);
+            _canFire = Time.time + _fireRate;
+
+            Instantiate(_laserPrefab, _laserSpawnPoint.position, Quaternion.identity);
+
+            _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+        }
     }
 }

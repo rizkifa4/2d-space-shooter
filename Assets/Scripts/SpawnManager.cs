@@ -11,7 +11,8 @@ public class SpawnManager : MonoBehaviour
 
     private IEnumerator SpawnEnemy()
     {
-        yield return new WaitForSeconds(2f);
+        float duration = 2f;
+        yield return new WaitForSeconds(duration);
         while (!_stopSpawning)
         {
             float xPos = 9;
@@ -26,7 +27,8 @@ public class SpawnManager : MonoBehaviour
 
     private IEnumerator SpawnPowerup()
     {
-        yield return new WaitForSeconds(2f);
+        float duration = 2f;
+        yield return new WaitForSeconds(duration);
         while (!_stopSpawning)
         {
             float xPos = 9;
@@ -36,9 +38,9 @@ public class SpawnManager : MonoBehaviour
             int randomPowerup = Random.Range(0, _powerupsPrefab.Length);
             Instantiate(_powerupsPrefab[randomPowerup], spawnPos, Quaternion.identity);
 
-            float minTime = 5;
-            float maxTime = 8;
-            float randomTime = Random.Range(minTime, maxTime);
+            float minInclusive = 3f;
+            float maxExclusive = 8f;
+            float randomTime = Random.Range(minInclusive, maxExclusive);
             yield return new WaitForSeconds(randomTime);
         }
     }
