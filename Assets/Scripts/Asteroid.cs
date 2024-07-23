@@ -26,7 +26,7 @@ public class Asteroid : MonoBehaviour
         // }
     }
 
-    void Update()
+    private void Update()
     {
         transform.Rotate(Vector3.forward * _rotateSpeed * Time.deltaTime);
     }
@@ -37,7 +37,7 @@ public class Asteroid : MonoBehaviour
         {
             Destroy(other.gameObject);
 
-            _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+            _soundManager.PlaySoundEffect(_soundManager.ExplosionSound);
 
             GameObject explosion = Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
             Destroy(explosion, 2.62f);

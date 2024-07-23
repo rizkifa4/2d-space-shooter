@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour
     private float _fireRate = 3.0f;
     private float _canFire = -1;
 
-    void Start()
+    private void Start()
     {
         _player = GameObject.FindWithTag("Player").GetComponent<Player>();
 
@@ -25,7 +25,7 @@ public class Enemy : MonoBehaviour
         _soundManager = GameObject.FindWithTag("SoundManager").GetComponent<SoundManager>();
     }
 
-    void Update()
+    private void Update()
     {
         Movement();
 
@@ -92,7 +92,7 @@ public class Enemy : MonoBehaviour
         float destroyDelay = 2.5f;
         Destroy(this.gameObject, destroyDelay);
 
-        _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+        _soundManager.PlaySoundEffect(_soundManager.ExplosionSound);
     }
 
     private void EnemyFire()
@@ -104,7 +104,7 @@ public class Enemy : MonoBehaviour
 
             Instantiate(_laserPrefab, _laserSpawnPoint.position, Quaternion.identity);
 
-            _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+            _soundManager.PlaySoundEffect(_soundManager.ExplosionSound);
         }
     }
 }

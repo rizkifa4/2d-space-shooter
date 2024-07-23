@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject _tripleShotPrefab;
     [SerializeField] private Transform _bulletSpawnPoint;
     [SerializeField] private float _fireRate;
-    [SerializeField] private SpawnManager _spawnManager;
+    private SpawnManager _spawnManager;
     private float _nextFire = 0f;
     private float _tripleshotDuration = 5f;
     private float _shieldDuration = 5f;
@@ -33,12 +33,12 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject _playerThruster;
     private int _score;
     private int _highScore;
-    [SerializeField] private Animator _playerAnim;
+    private Animator _playerAnim;
     [SerializeField] private int _laserAmmo;
     [SerializeField] private int _maxAmmo;
     private bool _isTurnRight;
     private bool _isDead;
-    [SerializeField] private SoundManager _soundManager;
+    private SoundManager _soundManager;
 
     public bool IsTripleShotEnabled { get { return _isTripleShotEnabled; } }
     public bool IsShieldEnabled { get { return _isShieldEnabled; } }
@@ -63,12 +63,11 @@ public class Player : MonoBehaviour
         return _isTripleShotEnabled;
     }
 
-    void Start()
+    private void Start()
     {
         _bulletSpawnPoint = transform.GetChild(0);
-        transform.position = _initialPosition;
 
-        _spawnManager.GetComponent<SpawnManager>();
+        _spawnManager = FindObjectOfType<SpawnManager>();
 
         _playerShield.SetActive(false);
 
@@ -86,10 +85,10 @@ public class Player : MonoBehaviour
 
         _playerAnim = GetComponent<Animator>();
 
-        _soundManager.GetComponent<SoundManager>();
+        _soundManager = GameObject.FindWithTag("SoundManager").GetComponent<SoundManager>();
     }
 
-    void Update()
+    private void Update()
     {
         Movement();
 
@@ -103,10 +102,27 @@ public class Player : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        float xRange = 11;
-
         Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
-        transform.Translate(direction * _speed * Time.deltaTime);
+
+        transform.Translate(_speed * Time.deltaTime * direction);
+
+        float xRange = 11;
+        float yMin = -4;
+        float yMax = 0;
+
+        float ClampY = Mathf.Clamp(transform.position.y, yMin, yMax);
+        float ClampX = transform.position.x;
+
+        if (ClampX < -xRange)
+        {
+            ClampX = xRange;
+        }
+        else if (ClampX > xRange)
+        {
+            ClampX = -xRange;
+        }
+
+        transform.position = new Vector3(ClampX, ClampY, transform.position.z);
 
         if (horizontalInput > 0)
         {
@@ -122,35 +138,9 @@ public class Player : MonoBehaviour
 
             _isTurnRight = false;
         }
-
-        if (horizontalInput == 0)
+        else
         {
-            if (_isTurnRight)
-            {
-                _playerAnim.SetBool("TurnRight", false);
-            }
-            else
-            {
-                _playerAnim.SetBool("TurnLeft", false);
-            }
-        }
-
-        if (transform.position.x < -xRange)
-        {
-            transform.position = new Vector3(xRange, transform.position.y, transform.position.z);
-        }
-        if (transform.position.x > xRange)
-        {
-            transform.position = new Vector3(-xRange, transform.position.y, transform.position.z);
-        }
-
-        if (transform.position.y >= 0)
-        {
-            transform.position = new Vector3(transform.position.x, 0, transform.position.z);
-        }
-        if (transform.position.y <= -4f)
-        {
-            transform.position = new Vector3(transform.position.x, -4f, transform.position.z);
+            _playerAnim.SetBool(_isTurnRight ? "TurnRight" : "TurnLeft", false);
         }
     }
 
@@ -166,13 +156,15 @@ public class Player : MonoBehaviour
     {
         if (Time.time > _nextFire && _laserAmmo > 0)
         {
+            _nextFire = Time.time + _fireRate;
+
             GameObject bullet = !_isTripleShotEnabled ? _laserPrefab : _tripleShotPrefab;
             Instantiate(bullet, _bulletSpawnPoint.position, Quaternion.identity);
 
             _laserAmmo--;
             UIManager.Instance.UpdateAmmo(_laserAmmo, _maxAmmo);
 
-            _soundManager.PlaySoundEffect(_soundManager.playerLaserSound);
+            _soundManager.PlaySoundEffect(_soundManager.PlayerLaserSound);
         }
     }
 
@@ -208,7 +200,7 @@ public class Player : MonoBehaviour
                 _spawnManager.OnPlayerDeath();
 
                 _playerAnim.SetTrigger("Explode");
-                _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+                _soundManager.PlaySoundEffect(_soundManager.ExplosionSound);
                 Destroy(GetComponent<Collider2D>());
 
                 _isDead = true;
@@ -216,7 +208,7 @@ public class Player : MonoBehaviour
                 Destroy(gameObject, destroyDelay);
             }
 
-            _soundManager.PlaySoundEffect(_soundManager.explosionSound);
+            _soundManager.PlaySoundEffect(_soundManager.ExplosionSound);
         }
     }
 
@@ -224,7 +216,7 @@ public class Player : MonoBehaviour
     {
         _isTripleShotEnabled = true;
 
-        _soundManager.PlaySoundEffect(_soundManager.positivePowerUpSound);
+        _soundManager.PlaySoundEffect(_soundManager.PositivePowerUpSound);
 
         StartCoroutine(TripleShotPowerDownRoutine(_tripleshotDuration));
     }
@@ -244,7 +236,7 @@ public class Player : MonoBehaviour
 
         _isSpeedBoostEnabled = true;
 
-        _soundManager.PlaySoundEffect(_soundManager.positivePowerUpSound);
+        _soundManager.PlaySoundEffect(_soundManager.PositivePowerUpSound);
     }
 
     public void SpeedDecreasePowerupActive()
@@ -256,7 +248,7 @@ public class Player : MonoBehaviour
 
         _isSpeedDecreaseEnabled = true;
 
-        _soundManager.PlaySoundEffect(_soundManager.negativePowerUpSound);
+        _soundManager.PlaySoundEffect(_soundManager.NegativePowerUpSound);
     }
 
     public void ShieldPowerupActive()
@@ -264,7 +256,7 @@ public class Player : MonoBehaviour
         _isShieldEnabled = true;
         _playerShield.SetActive(true);
 
-        _soundManager.PlaySoundEffect(_soundManager.positivePowerUpSound);
+        _soundManager.PlaySoundEffect(_soundManager.PositivePowerUpSound);
 
         StartCoroutine(ShieldPowerDownRoutine(_shieldDuration));
     }
@@ -304,7 +296,7 @@ public class Player : MonoBehaviour
             if (random == 0) _rightEngineDamage.SetActive(false); else _leftEngineDamage.SetActive(false);
         }
 
-        _soundManager.PlaySoundEffect(_soundManager.positivePowerUpSound);
+        _soundManager.PlaySoundEffect(_soundManager.PositivePowerUpSound);
     }
 
     public void RestoreAmmo(int ammo)
@@ -318,91 +310,45 @@ public class Player : MonoBehaviour
 
         UIManager.Instance.UpdateAmmo(_laserAmmo, _maxAmmo);
 
-        _soundManager.PlaySoundEffect(_soundManager.positivePowerUpSound);
+        _soundManager.PlaySoundEffect(_soundManager.PositivePowerUpSound);
     }
 
     private void SetBoostAndDecreaseSpeedTimer()
     {
-        if (!_isDead)
+        if (_isDead)
         {
-            if (_isSpeedBoostEnabled)
+            _speed = 0;
+            UIManager.Instance.UpdateSpeedFillAndTimer(_speed, 0f);
+            return;
+        }
+
+        if (_isSpeedBoostEnabled)
+        {
+            _speedBoostDuration -= Time.deltaTime;
+
+            if (_speedBoostDuration <= 0f)
             {
-                _speedBoostDuration -= Time.deltaTime;
-
-                if (_speedBoostDuration <= 0f)
-                {
-                    _isSpeedBoostEnabled = false;
-                    _speed = _originalSpeed;
-                }
-
-                UIManager.Instance.UpdateSpeedFillAndTimer(_speed, _speedBoostDuration);
-            }
-            else if (_isSpeedDecreaseEnabled)
-            {
-                _speedDecreaseDuration -= Time.deltaTime;
-
-                if (_speedDecreaseDuration <= 0f)
-                {
-                    _isSpeedDecreaseEnabled = false;
-                    _speed = _originalSpeed;
-                }
-
-                UIManager.Instance.UpdateSpeedFillAndTimer(_speed, _speedDecreaseDuration);
-            }
-            else
-            {
+                _isSpeedBoostEnabled = false;
                 _speed = _originalSpeed;
-                UIManager.Instance.UpdateSpeedFillAndTimer(_speed, 0f);
+            }
+        }
+        else if (_isSpeedDecreaseEnabled)
+        {
+            _speedDecreaseDuration -= Time.deltaTime;
+
+            if (_speedDecreaseDuration <= 0f)
+            {
+                _isSpeedDecreaseEnabled = false;
+                _speed = _originalSpeed;
             }
         }
         else
         {
-            _speed = 0;
-            UIManager.Instance.UpdateSpeedFillAndTimer(_speed, 0f);
+            _speed = _originalSpeed;
         }
+
+        UIManager.Instance.UpdateSpeedFillAndTimer(_speed,
+        _isSpeedBoostEnabled ? _speedBoostDuration :
+        (_isSpeedDecreaseEnabled ? _speedDecreaseDuration : 0f));
     }
-
-    // private void SetBoostAndDecreaseSpeed()
-    // {
-    //     if (_isSpeedBoostEnabled)
-    //     {
-    //         _speed = _speedBoost;
-    //     }
-    //     else
-    //     {
-    //         if (_isSpeedDecreaseEnabled)
-    //         {
-    //             _speed = _speedDecrease;
-    //         }
-    //     }
-    //     UIManager.Instance.UpdateSpeedFill(_speed);
-    // }
-
-    // private void UpdateSpeedTimer()
-    // {
-    //     if (_isSpeedBoostEnabled)
-    //     {
-    //         _speedBoostDuration -= Time.deltaTime;
-    //         if (_speedBoostDuration <= 0)
-    //         {
-    //             _isSpeedBoostEnabled = false;
-    //             _speedBoostDuration = _initialSpeedBoostDuration;
-    //             _speed = _originalSpeed;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         if (_isSpeedDecreaseEnabled)
-    //         {
-    //             _speedDecreaseDuration -= Time.deltaTime;
-    //             if (_speedDecreaseDuration <= 0)
-    //             {
-    //                 _isSpeedDecreaseEnabled = false;
-    //                 _speedDecreaseDuration = _initialSpeedDecreaseDuration;
-    //                 _speed = _originalSpeed;
-    //             }
-    //         }
-    //     }
-    //     UIManager.Instance.UpdateSpeedFill(_speed);
-    // }
 }

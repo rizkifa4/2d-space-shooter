@@ -6,22 +6,62 @@ using System.Runtime.InteropServices;
 
 public class Options : MonoBehaviour
 {
+
     [SerializeField] private GameObject _hudDisplay;
     [SerializeField] private GameObject _pauseMenuPanel;
     [SerializeField] private GameObject _pauseMenuContainer;
     [SerializeField] private GameObject _exitConfirmationContainer;
+    [SerializeField] private GameObject _mainMenuConfirmationContainer;
     private RuntimePlatform _platform = RuntimePlatform.WebGLPlayer;
     private bool _isPaused;
     private bool _isExitConfirmation;
+    private bool _isMainMenuConfirmation;
+    private Animator _pauseMenuAnimator;
+    private Animator _hudAnimator;
+    private bool _isPausedAnimRunning;
+    private bool _isResumeAnimRunning;
+    [SerializeField] private Button _resumeButton;
+    private Button _bgResumeButton;
 
     [DllImport("__Internal")]
     private static extern void CloseWindow();
-    void Start()
+
+    private void Start()
     {
+        _pauseMenuAnimator = _pauseMenuPanel.GetComponent<Animator>();
+        _hudAnimator = _hudDisplay.GetComponent<Animator>();
+
+        _pauseMenuPanel.SetActive(true);
         _pauseMenuContainer.SetActive(false);
+        _mainMenuConfirmationContainer.SetActive(false);
+        _exitConfirmationContainer.SetActive(false);
+
+        _bgResumeButton = _pauseMenuContainer.GetComponent<Button>();
     }
 
-    void Update()
+    public bool IsPausedAnimRunning
+    {
+        get { return _isPausedAnimRunning; }
+        set { _isPausedAnimRunning = value; }
+    }
+
+    public bool IsResumeAnimRunning
+    {
+        get { return _isResumeAnimRunning; }
+        set { _isResumeAnimRunning = value; }
+    }
+
+    public Button ResumeButton
+    {
+        get { return _resumeButton; }
+    }
+
+    public Button BgResumeButton
+    {
+        get { return _bgResumeButton; }
+    }
+
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -30,6 +70,10 @@ public class Options : MonoBehaviour
                 if (_isExitConfirmation)
                 {
                     ExitGameCancel();
+                }
+                else if (_isMainMenuConfirmation)
+                {
+                    MainMenuCancel();
                 }
                 else
                 {
@@ -42,35 +86,66 @@ public class Options : MonoBehaviour
             }
         }
     }
+
     public void PauseGame()
     {
-        _isPaused = true;
-        _pauseMenuContainer.SetActive(true);
-        _pauseMenuContainer.SetActive(true);
-        _hudDisplay.SetActive(false);
-        Time.timeScale = 0;
+        if (!_isResumeAnimRunning)
+        {
+            Time.timeScale = 0;
+            _isPaused = true;
+
+            _pauseMenuAnimator.SetTrigger("PauseIn");
+            _hudAnimator.SetTrigger("Hud_PauseIn");
+        }
     }
 
     public void ResumeGame()
     {
-        _isPaused = false;
-        _pauseMenuContainer.SetActive(false);
-        _hudDisplay.SetActive(true);
+        if (!_isPausedAnimRunning)
+        {
+            _isPaused = false;
+
+            _pauseMenuAnimator.SetTrigger("PauseOut");
+            _hudAnimator.SetTrigger("Hud_PauseOut");
+
+            _resumeButton.interactable = false;
+            _bgResumeButton.interactable = false;
+        }
+    }
+
+    public void Back2MainMenuOpen()
+    {
+        _isMainMenuConfirmation = true;
+
+        _pauseMenuAnimator.SetTrigger("MainMenuIn");
+    }
+
+    public void MainMenuCancel()
+    {
+        _isMainMenuConfirmation = false;
+
+        _pauseMenuAnimator.SetTrigger("MainMenuOut");
+    }
+
+    public void MainMenuConfirm()
+    {
         Time.timeScale = 1;
+
+        GameManager.Instance.BackToMainMenu();
     }
 
     public void ExitGameOpen()
     {
         _isExitConfirmation = true;
-        _pauseMenuContainer.SetActive(false);
-        _exitConfirmationContainer.SetActive(true);
+
+        _pauseMenuAnimator.SetTrigger("ExitGameConfirmIn");
     }
 
     public void ExitGameCancel()
     {
         _isExitConfirmation = false;
-        _exitConfirmationContainer.SetActive(false);
-        _pauseMenuContainer.SetActive(true);
+
+        _pauseMenuAnimator.SetTrigger("ExitGameConfirmOut");
     }
 
     public void ExitGameConfirm()

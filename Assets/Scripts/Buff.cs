@@ -24,7 +24,7 @@ public class Buff : MonoBehaviour
         _soundManager = GameObject.FindWithTag("SoundManager").GetComponent<SoundManager>();
     }
 
-    void Update()
+    private void Update()
     {
         transform.Translate(Vector3.down * _speed * Time.deltaTime);
 
@@ -40,11 +40,11 @@ public class Buff : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            Player player = other.GetComponent<Player>();
+            Player playerCol = other.GetComponent<Player>();
 
-            if (player != null)
+            if (playerCol != null)
             {
-                PowerUpActive(player);
+                PowerUpActive(playerCol);
             }
         }
     }

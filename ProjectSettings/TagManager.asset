@@ -9,6 +9,7 @@ TagManager:
   - SpawnManager
   - PlayerLaser
   - EnemyLaser
+  - UIManager
   layers:
   - Default
   - TransparentFX

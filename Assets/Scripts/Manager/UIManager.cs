@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System;
 
 public class UIManager : MonoBehaviour
 {
@@ -21,18 +20,20 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    [SerializeField] private TextMeshProUGUI _scoreText;
-    [SerializeField] private TextMeshProUGUI _highScoreText;
-    [SerializeField] private Image _livesImage;
-    [SerializeField] private Sprite[] _livesSprites;
-    [SerializeField] private GameObject _gameOverPanel;
-    [SerializeField] private TextMeshProUGUI _finalScoreText;
+    [Header("General UI Elements")]
     [SerializeField] private Button _restartButton;
+    [SerializeField] private GameObject _gameOverPanel;
+    [SerializeField] private Sprite[] _livesSprites;
     [SerializeField] private Gradient _speedColor;
-    [SerializeField] private Image _speedFill;
-    [SerializeField] private TextMeshProUGUI _ammoText;
-    [SerializeField] private TextMeshProUGUI _speedTimerText;
+    [SerializeField] private TextMeshProUGUI _highScoreText;
+    [SerializeField] private TextMeshProUGUI _finalScoreText;
 
+    [Header("Player UI Elements")]
+    [SerializeField] private Image _livesImage;
+    [SerializeField] private TextMeshProUGUI _ammoText;
+    [SerializeField] private Image _speedFill;
+    [SerializeField] private TextMeshProUGUI _speedTimerText;
+    [SerializeField] private TextMeshProUGUI _scoreText;
     private int _currentScore;
 
     private void Awake()
@@ -40,11 +41,11 @@ public class UIManager : MonoBehaviour
         _instance = this;
     }
 
-    void Start()
+    private void Start()
     {
         _gameOverPanel.SetActive(false);
 
-        _restartButton.onClick.AddListener(() => GameManager.Instance.LoadScene());
+        _restartButton.onClick.AddListener(() => GameManager.Instance.RestartScene());
     }
 
     public void UpdateScore(int score, int highScore)
@@ -81,13 +82,12 @@ public class UIManager : MonoBehaviour
 
     private IEnumerator GameOverFlickerRoutine()
     {
-        float duration = .5f;
         while (true)
         {
             _restartButton.gameObject.SetActive(true);
-            yield return new WaitForSeconds(duration);
+            yield return new WaitForSeconds(.5f);
             _restartButton.gameObject.SetActive(false);
-            yield return new WaitForSeconds(duration);
+            yield return new WaitForSeconds(.5f);
         }
     }
 
@@ -101,7 +101,7 @@ public class UIManager : MonoBehaviour
             10f => $"High Speed Time:\n{timer.ToString("F2")}s",//   speedThreshold = 10f;
             2.5f => $"Low Speed Time:\n{timer.ToString("F2")}s",//   speedThreshold = 2.5f;
             _ => "Normal Speed",//   speedThreshold = 5f;
-        };
+        }; _speedFill.fillAmount = Mathf.Lerp(_speedFill.fillAmount, currentSpeed / 10f, Time.deltaTime * 5f);
     }
 
     private Color SetColorSpeerBar(float currentSpeed)
@@ -113,28 +113,4 @@ public class UIManager : MonoBehaviour
     {
         _ammoText.text = $"Ammo:\n{currentAmmo}/{maxAmmo}";
     }
-
-    // public void UpdateUISpeed(float currentSpeed)
-    // {
-    //     StartCoroutine(UpdateSpeedRoutine(currentSpeed));
-    // }
-
-    // private IEnumerator UpdateSpeedRoutine(float targetSpeed)
-    // {
-    //     float startSpeed = _speedSlider.value;
-
-    //     float elapsed = targetSpeed / 10f - startSpeed;
-    //     float duration = .5f;
-
-    //     while (Mathf.Abs(elapsed) > 0.001f)
-    //     {
-    //         _speedSlider.value += elapsed * Time.deltaTime;
-    //         _speedSliderFill.color = _speedColor.Evaluate(_speedSlider.value);
-    //         elapsed -= elapsed * Time.deltaTime / duration;
-    //         yield return null;
-    //     }
-
-    //     _speedSlider.value = targetSpeed / 10f;
-    //     _speedSliderFill.color = _speedColor.Evaluate(targetSpeed / 10f);
-    // }
 }

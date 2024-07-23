@@ -13,7 +13,7 @@ public class Laser : MonoBehaviour
 
     [SerializeField] private LaserType _laserType;
 
-    void Update()
+    private void Update()
     {
         Vector3 direction = IsPlayerLaser() ? Vector3.up : Vector3.down;
 

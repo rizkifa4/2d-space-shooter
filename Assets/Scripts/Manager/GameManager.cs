@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
 
     private bool _hasGameOver;
     private string _gameScene = "GameScene";
+
     private void Awake()
     {
         _instance = this;
@@ -30,7 +31,7 @@ public class GameManager : MonoBehaviour
     {
         if (_hasGameOver && Input.GetKeyDown(KeyCode.R))
         {
-            LoadScene();
+            RestartScene();
         }
     }
 
@@ -39,8 +40,18 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(_gameScene);
     }
 
+    public void RestartScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
     public void GameOver()
     {
         _hasGameOver = true;
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }
